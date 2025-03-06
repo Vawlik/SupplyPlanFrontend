@@ -1,0 +1,126 @@
+.results-card {
+    background-color: var(--card-background);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.results-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.results-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.results-header p {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.results-content {
+    padding: 16px;
+}
+
+.loading-container,
+.error-container,
+.empty-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.loading-container p,
+.empty-container p {
+    color: var(--text-muted);
+    margin-top: 12px;
+}
+
+.error-container svg {
+    color: var(--error-color);
+    margin-bottom: 12px;
+}
+
+.error-title {
+    font-weight: 600;
+    color: var(--error-color);
+    margin-bottom: 4px;
+}
+
+.error-message {
+    color: var(--text-muted);
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.supply-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.supply-table th,
+.supply-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.supply-table th {
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.supply-table tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.dark .supply-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.column-number {
+    width: 50px;
+}
+
+.column-price,
+.column-doses {
+    text-align: right;
+}
+
+.status-recommended {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-not-recommended {
+    display: inline-block;
+    padding: 4px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 9999px;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .supply-table {
+        min-width: 650px;
+    }
+}
+
