@@ -1,20 +1,30 @@
 .results-card {
     background-color: var(--card-background);
-    border-radius: var(--radius);
+    border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-md);
     overflow: hidden;
+    transition: box-shadow 0.3s ease;
+}
+
+.results-card:hover {
+    box-shadow: var(--shadow-lg);
 }
 
 .results-header {
-    padding: 16px;
+    padding: 20px;
     border-bottom: 1px solid var(--border-color);
+    background-color: rgba(0, 0, 0, 0.01);
+}
+
+.dark .results-header {
+    background-color: rgba(255, 255, 255, 0.01);
 }
 
 .results-header h3 {
     font-size: 1.25rem;
     font-weight: 600;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .results-header p {
@@ -23,7 +33,7 @@
 }
 
 .results-content {
-    padding: 16px;
+    padding: 20px;
 }
 
 .loading-container,
@@ -40,26 +50,51 @@
 .loading-container p,
 .empty-container p {
     color: var(--text-muted);
-    margin-top: 12px;
+    margin-top: 16px;
+    max-width: 400px;
+}
+
+.empty-hint {
+    font-size: 0.875rem;
+    margin-top: 8px;
+    opacity: 0.7;
 }
 
 .error-container svg {
     color: var(--error-color);
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .error-title {
     font-weight: 600;
     color: var(--error-color);
-    margin-bottom: 4px;
+    margin-bottom: 8px;
 }
 
 .error-message {
     color: var(--text-muted);
 }
 
+.spinner {
+    animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.table-responsive {
+    width: 100%;
+}
+
 .table-container {
     overflow-x: auto;
+    margin-bottom: 20px;
 }
 
 .supply-table {
@@ -70,7 +105,7 @@
 
 .supply-table th,
 .supply-table td {
-    padding: 12px;
+    padding: 12px 16px;
     text-align: left;
     border-bottom: 1px solid var(--border-color);
 }
@@ -78,6 +113,18 @@
 .supply-table th {
     font-weight: 600;
     color: var(--text-muted);
+    background-color: rgba(0, 0, 0, 0.02);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.dark .supply-table th {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.supply-table tr {
+    transition: background-color var(--transition);
 }
 
 .supply-table tr:hover {
@@ -88,21 +135,35 @@
     background-color: rgba(255, 255, 255, 0.02);
 }
 
+.recommended-row {
+    background-color: var(--primary-light);
+}
+
+.recommended-row:hover {
+    background-color: var(--primary-light) !important;
+}
+
 .column-number {
     width: 50px;
+    text-align: center;
+}
+
+.column-name {
+    font-weight: 500;
 }
 
 .column-price,
 .column-doses {
     text-align: right;
+    font-variant-numeric: tabular-nums;
 }
 
 .status-recommended {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 8px;
-    background-color: rgba(16, 185, 129, 0.1);
+    gap: 6px;
+    padding: 4px 10px;
+    background-color: var(--success-light);
     color: var(--success-color);
     border-radius: 9999px;
     font-size: 0.75rem;
@@ -111,16 +172,155 @@
 
 .status-not-recommended {
     display: inline-block;
-    padding: 4px 8px;
+    padding: 4px 10px;
     border: 1px solid var(--border-color);
     border-radius: 9999px;
     color: var(--text-muted);
     font-size: 0.75rem;
 }
 
-@media (max-width: 768px) {
-    .supply-table {
-        min-width: 650px;
+/* Мобильные карточки */
+.mobile-cards {
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.mobile-card {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.mobile-card.recommended {
+    border-left: 4px solid var(--success-color);
+}
+
+.mobile-card-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: rgba(0, 0, 0, 0.02);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dark .mobile-card-header {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.mobile-card-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 12px;
+}
+
+.mobile-card-name {
+    flex: 1;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.mobile-status-recommended {
+    color: var(--success-color);
+}
+
+.mobile-card-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mobile-card-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+}
+
+.mobile-card-label {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.mobile-card-value {
+    text-align: right;
+}
+
+.mobile-card-value.price {
+    font-weight: 600;
+}
+
+.status-text-recommended {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+.status-text-not-recommended {
+    color: var(--text-muted);
+}
+
+/* Адаптивность для разных экранов */
+@media (max-width: 767px) {
+    .table-container {
+        display: none;
+    }
+
+    .mobile-cards {
+        display: flex;
+    }
+
+    .results-header,
+    .results-content {
+        padding: 15px;
     }
 }
 
+@media (min-width: 768px) {
+    .results-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .results-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .table-responsive {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .table-container {
+        flex: 1;
+        margin-bottom: 0;
+    }
+
+    .supply-table {
+        height: 100%;
+    }
+
+    /* Скрываем мобильные карточки на десктопе */
+    .mobile-cards {
+        display: none;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    .supply-table {
+        min-width: 800px;
+    }
+}

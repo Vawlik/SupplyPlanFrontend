@@ -18,6 +18,7 @@ export function DiseaseForm({ onSubmit }: DiseaseFormProps) {
     const [diseases, setDiseases] = useState<{ id: number; name: string }[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)
+    const [isFormValid, setIsFormValid] = useState<boolean>(true)
 
     const dispatch = useDispatch()
 
@@ -41,10 +42,15 @@ export function DiseaseForm({ onSubmit }: DiseaseFormProps) {
         fetchDiseases()
     }, [])
 
+    useEffect(() => {
+        // Валидация формы
+        setIsFormValid(!!diseaseId && numPatients >= 1)
+    }, [diseaseId, numPatients])
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        if (!diseaseId || numPatients < 1) {
+        if (!isFormValid) {
             setError("Пожалуйста, заполните все поля корректно")
             return
         }
@@ -60,6 +66,8 @@ export function DiseaseForm({ onSubmit }: DiseaseFormProps) {
             })
 
             dispatch(fetchSupplyPlanSuccess(response.data))
+
+            // Вызываем onSubmit в любом случае, даже если данных нет
             if (onSubmit) onSubmit()
         } catch (error) {
             if (axios.isAxiosError(error)) {
@@ -70,6 +78,9 @@ export function DiseaseForm({ onSubmit }: DiseaseFormProps) {
                 dispatch(fetchSupplyPlanFailure("Произошла неизвестная ошибка"))
                 setError("Произошла неизвестная ошибка")
             }
+
+            // Вызываем onSubmit даже при ошибке, чтобы показать пустое состояние
+            if (onSubmit) onSubmit()
         } finally {
             setIsLoading(false)
         }
@@ -83,47 +94,104 @@ export function DiseaseForm({ onSubmit }: DiseaseFormProps) {
             </div>
             <form onSubmit={handleSubmit}>
                 <div className="form-content">
-                    {error && <div className="error-message">{error}</div>}
+                    {error && (
+                        <div className="error-message">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                            <span>{error}</span>
+                        </div>
+                    )}
 
                     <div className="form-group">
                         <label htmlFor="disease">Заболевание</label>
-                        <select
-                            id="disease"
-                            value={diseaseId}
-                            onChange={(e) => setDiseaseId(e.target.value)}
-                            disabled={isLoading || diseases.length === 0}
-                        >
-                            {diseases.map((disease) => (
-                                <option key={disease.id} value={disease.id.toString()}>
-                                    {disease.name}
-                                </option>
-                            ))}
-                        </select>
+                        <div className="select-wrapper">
+                            <select
+                                id="disease"
+                                value={diseaseId}
+                                onChange={(e) => setDiseaseId(e.target.value)}
+                                disabled={isLoading || diseases.length === 0}
+                            >
+                                {diseases.map((disease) => (
+                                    <option key={disease.id} value={disease.id.toString()}>
+                                        {disease.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <svg
+                                className="select-arrow"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <path d="m6 9 6 6 6-6" />
+                            </svg>
+                        </div>
                         {diseases.length === 0 && !isLoading && !error && <p className="empty-message">Список заболеваний пуст</p>}
                     </div>
 
                     <div className="form-group">
                         <label htmlFor="patients">Количество пациентов</label>
-                        <input
-                            id="patients"
-                            type="number"
-                            min={1}
-                            value={numPatients}
-                            onChange={(e) => setNumPatients(Number.parseInt(e.target.value) || 1)}
-                            disabled={isLoading}
-                        />
+                        <div className="number-input-wrapper">
+                            <button
+                                type="button"
+                                className="number-control"
+                                onClick={() => setNumPatients((prev) => Math.max(1, prev - 1))}
+                                disabled={isLoading || numPatients <= 1}
+                            >
+                                -
+                            </button>
+                            <input
+                                id="patients"
+                                type="number"
+                                min={1}
+                                value={numPatients}
+                                onChange={(e) => setNumPatients(Number.parseInt(e.target.value) || 1)}
+                                disabled={isLoading}
+                            />
+                            <button
+                                type="button"
+                                className="number-control"
+                                onClick={() => setNumPatients((prev) => prev + 1)}
+                                disabled={isLoading}
+                            >
+                                +
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <div className="form-footer">
-                    <button type="submit" className="submit-button" disabled={isLoading}>
+                    <button
+                        type="submit"
+                        className={`submit-button ${!isFormValid ? "disabled" : ""}`}
+                        disabled={isLoading || !isFormValid}
+                    >
                         {isLoading ? (
                             <>
                                 <svg
                                     className="spinner"
                                     xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
+                                    width="20"
+                                    height="20"
                                     viewBox="0 0 24 24"
                                     fill="none"
                                     stroke="currentColor"
@@ -133,10 +201,26 @@ export function DiseaseForm({ onSubmit }: DiseaseFormProps) {
                                 >
                                     <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
                                 </svg>
-                                Формирование плана...
+                                <span>Формирование плана...</span>
                             </>
                         ) : (
-                            "Сформировать план снабжения"
+                            <>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                >
+                                    <path d="M5 12h14"></path>
+                                    <path d="M12 5v14"></path>
+                                </svg>
+                                <span>Сформировать план снабжения</span>
+                            </>
                         )}
                     </button>
                 </div>
@@ -144,4 +228,3 @@ export function DiseaseForm({ onSubmit }: DiseaseFormProps) {
         </div>
     )
 }
-
