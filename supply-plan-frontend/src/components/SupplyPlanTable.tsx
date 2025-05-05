@@ -3,13 +3,26 @@
 import { useSelector } from "react-redux"
 import type { RootState } from "../store"
 import "./styles/supply-plan-table.css"
+import { useState } from "react"
+import { ChevronDown, ChevronUp } from "lucide-react"
 
 interface SupplyPlanTableProps {
     hasSubmitted: boolean
 }
 
+interface Item {
+    name: string
+    dosage: string
+    frequency: string
+    duration: string
+    price: number
+    total_doses: number
+    status: string
+}
+
 export function SupplyPlanTable({ hasSubmitted }: SupplyPlanTableProps) {
     const { items, loading, error } = useSelector((state: RootState) => state.supplyPlan)
+    const [sortConfig, setSortConfig] = useState<{ key: keyof Item; direction: 'ascending' | 'descending' } | null>(null)
 
     const formatCurrency = (value: number): string => {
         return new Intl.NumberFormat("ru-RU", {
@@ -18,6 +31,33 @@ export function SupplyPlanTable({ hasSubmitted }: SupplyPlanTableProps) {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
         }).format(value)
+    }
+
+    const sortedItems = () => {
+        if (!sortConfig) return items
+
+        return [...items].sort((a, b) => {
+            if (a[sortConfig.key] < b[sortConfig.key]) {
+                return sortConfig.direction === 'ascending' ? -1 : 1
+            }
+            if (a[sortConfig.key] > b[sortConfig.key]) {
+                return sortConfig.direction === 'ascending' ? 1 : -1
+            }
+            return 0
+        })
+    }
+
+    const requestSort = (key: keyof Item) => {
+        let direction: 'ascending' | 'descending' = 'ascending'
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending'
+        }
+        setSortConfig({ key, direction })
+    }
+
+    const renderSortIcon = (key: keyof Item) => {
+        if (!sortConfig || sortConfig.key !== key) return null
+        return sortConfig.direction === 'ascending' ? <ChevronUp size={16} /> : <ChevronDown size={16} />
     }
 
     const renderContent = () => {
@@ -125,17 +165,52 @@ export function SupplyPlanTable({ hasSubmitted }: SupplyPlanTableProps) {
                         <thead>
                         <tr>
                             <th className="column-number">№</th>
-                            <th>Лекарственное средство</th>
-                            <th>Дозировка</th>
-                            <th>Частота приема</th>
-                            <th>Длительность курса</th>
-                            <th className="column-price">Цена</th>
-                            <th className="column-doses">Общее кол-во доз</th>
-                            <th>Статус</th>
+                            <th className="sortable-header" onClick={() => requestSort('name')}>
+                                <div className="header-content">
+                                    Лекарственное средство
+                                    {renderSortIcon('name')}
+                                </div>
+                            </th>
+                            <th className="sortable-header" onClick={() => requestSort('dosage')}>
+                                <div className="header-content">
+                                    Дозировка
+                                    {renderSortIcon('dosage')}
+                                </div>
+                            </th>
+                            <th className="sortable-header" onClick={() => requestSort('frequency')}>
+                                <div className="header-content">
+                                    Частота приема
+                                    {renderSortIcon('frequency')}
+                                </div>
+                            </th>
+                            <th className="sortable-header" onClick={() => requestSort('duration')}>
+                                <div className="header-content">
+                                    Длительность курса
+                                    {renderSortIcon('duration')}
+                                </div>
+                            </th>
+                            <th className="column-price sortable-header" onClick={() => requestSort('price')}>
+                                <div className="header-content">
+                                    Цена
+                                    {renderSortIcon('price')}
+                                </div>
+                            </th>
+                            <th className="column-doses sortable-header" onClick={() => requestSort('total_doses')}>
+                                <div className="header-content">
+                                    Общее кол-во доз
+                                    {renderSortIcon('total_doses')}
+                                </div>
+                            </th>
+                            <th className="sortable-header" onClick={() => requestSort('status')}>
+                                <div className="header-content">
+                                    Статус
+                                    {renderSortIcon('status')}
+                                </div>
+                            </th>
                         </tr>
                         </thead>
                         <tbody>
-                        {items.map((item, index) => (
+                        {sortedItems().map((item, index) => (
                             <tr key={index} className={item.status === "рекомендовано" ? "recommended-row" : ""}>
                                 <td className="column-number">{index + 1}</td>
                                 <td className="column-name">{item.name}</td>
@@ -175,7 +250,7 @@ export function SupplyPlanTable({ hasSubmitted }: SupplyPlanTableProps) {
 
                 {/* Мобильное представление данных - показываем только на мобильных устройствах */}
                 <div className="mobile-cards">
-                    {items.map((item, index) => (
+                    {sortedItems().map((item, index) => (
                         <div key={index} className={`mobile-card ${item.status === "рекомендовано" ? "recommended" : ""}`}>
                             <div className="mobile-card-header">
                                 <span className="mobile-card-number">{index + 1}</span>
@@ -250,3 +325,5 @@ export function SupplyPlanTable({ hasSubmitted }: SupplyPlanTableProps) {
         </div>
     )
 }
+
+export default SupplyPlanTable
