@@ -1,216 +1,179 @@
-"use client"
-
-import { useSelector } from "react-redux"
-import type { RootState } from "../store"
+import {useSelector} from "react-redux"
+import {useEffect, useState} from "react"
+import type {RootState} from "../store"
+import type {SupplyPlanItem} from "../store/supplyPlanSlice.ts"
+import {CheckCircleIcon, ChevronDownIcon, ChevronUpIcon} from "./icons"
+import {StatusBadge} from "./ui/status-badge.tsx"
+import {MobileSortControls} from "./ui/mobile-sort-controls.tsx"
+import {EmptyState} from "./ui/empty-state.tsx"
+import {LoadingState} from "./ui/loading-state.tsx"
+import {ErrorState} from "./ui/error-state.tsx"
+import {formatCurrency} from "../lib/utils.ts"
 import "./styles/supply-plan-table.css"
-import { useState } from "react"
-import { ChevronDown, ChevronUp } from "lucide-react"
 
 interface SupplyPlanTableProps {
     hasSubmitted: boolean
 }
 
-interface Item {
-    name: string
-    dosage: string
-    frequency: string
-    duration: string
-    price: number
-    total_doses: number
-    status: string
+type SortField = "name" | "dosage" | "frequency" | "duration" | "price" | "total_doses" | "status"
+type SortDirection = "asc" | "desc"
+
+interface SortOption {
+    value: SortField
+    label: string
 }
 
-export function SupplyPlanTable({ hasSubmitted }: SupplyPlanTableProps) {
-    const { items, loading, error } = useSelector((state: RootState) => state.supplyPlan)
-    const [sortConfig, setSortConfig] = useState<{ key: keyof Item; direction: 'ascending' | 'descending' } | null>(null)
+export function SupplyPlanTable({hasSubmitted}: SupplyPlanTableProps) {
+    const {items, loading, error} = useSelector((state: RootState) => state.supplyPlan)
+    const [sortedItems, setSortedItems] = useState<SupplyPlanItem[]>([])
+    const [sortField, setSortField] = useState<SortField | null>(null)
+    const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
 
-    const formatCurrency = (value: number): string => {
-        return new Intl.NumberFormat("ru-RU", {
-            style: "currency",
-            currency: "RUB",
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-        }).format(value)
-    }
+    const sortOptions: SortOption[] = [
+        {value: "name", label: "Название"},
+        {value: "dosage", label: "Дозировка"},
+        {value: "frequency", label: "Частота приема"},
+        {value: "duration", label: "Длительность курса"},
+        {value: "price", label: "Цена"},
+        {value: "total_doses", label: "Количество доз"},
+        {value: "status", label: "Статус"},
+    ]
 
-    const sortedItems = () => {
-        if (!sortConfig) return items
-
-        return [...items].sort((a, b) => {
-            if (a[sortConfig.key] < b[sortConfig.key]) {
-                return sortConfig.direction === 'ascending' ? -1 : 1
-            }
-            if (a[sortConfig.key] > b[sortConfig.key]) {
-                return sortConfig.direction === 'ascending' ? 1 : -1
-            }
-            return 0
-        })
-    }
-
-    const requestSort = (key: keyof Item) => {
-        let direction: 'ascending' | 'descending' = 'ascending'
-        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
-            direction = 'descending'
+    useEffect(() => {
+        if (items.length === 0) {
+            setSortedItems([])
+            return
         }
-        setSortConfig({ key, direction })
+
+        const sorted = [...items]
+
+        if (sortField) {
+            sorted.sort((a, b) => {
+                let valueA = a[sortField]
+                let valueB = b[sortField]
+
+                if (sortField === "price" || sortField === "total_doses") {
+                    valueA = Number(valueA)
+                    valueB = Number(valueB)
+                } else {
+                    valueA = String(valueA).toLowerCase()
+                    valueB = String(valueB).toLowerCase()
+                }
+
+                if (valueA < valueB) return sortDirection === "asc" ? -1 : 1
+                if (valueA > valueB) return sortDirection === "asc" ? 1 : -1
+                return 0
+            })
+        }
+
+        setSortedItems(sorted)
+    }, [items, sortField, sortDirection])
+
+    const handleSort = (field: SortField) => {
+        if (sortField === field) {
+            setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+        } else {
+            setSortField(field)
+            setSortDirection("asc")
+        }
     }
 
-    const renderSortIcon = (key: keyof Item) => {
-        if (!sortConfig || sortConfig.key !== key) return null
-        return sortConfig.direction === 'ascending' ? <ChevronUp size={16} /> : <ChevronDown size={16} />
+    const handleMobileSortChange = (field: SortField | null) => {
+        setSortField(field)
+    }
+
+    const toggleMobileSortDirection = () => {
+        setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+    }
+
+    const getSortIcon = (field: SortField) => {
+        if (sortField !== field) return null
+
+        return sortDirection === "asc" ? (
+            <ChevronUpIcon className="sort-icon" size={16}/>
+        ) : (
+            <ChevronDownIcon className="sort-icon" size={16}/>
+        )
     }
 
     const renderContent = () => {
         if (loading) {
-            return (
-                <div className="loading-container">
-                    <svg
-                        className="spinner"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="32"
-                        height="32"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    >
-                        <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
-                    </svg>
-                    <p>Формирование плана снабжения...</p>
-                </div>
-            )
+            return <LoadingState/>
         }
 
         if (error) {
-            return (
-                <div className="error-container">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="32"
-                        height="32"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    >
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
-                    <p className="error-title">Ошибка</p>
-                    <p className="error-message">{error}</p>
-                </div>
-            )
+            return <ErrorState message={error}/>
         }
 
         if (items.length === 0) {
             if (!hasSubmitted) {
-                // Пользователь еще не отправлял форму
-                return (
-                    <div className="empty-container">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="32"
-                            height="32"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        >
-                            <rect width="18" height="18" x="3" y="3" rx="2" />
-                            <path d="M9 3v18" />
-                            <path d="m14 9 3 3-3 3" />
-                        </svg>
-                        <p>Выберите заболевание и количество пациентов, затем нажмите "Сформировать план снабжения"</p>
-                        <p className="empty-hint">Результаты будут отображены здесь</p>
-                    </div>
-                )
+                return <EmptyState type="no-submission"/>
             } else {
-                // Пользователь отправил форму, но данных нет
-                return (
-                    <div className="no-data-container">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="32"
-                            height="32"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        >
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="8" y1="12" x2="16" y2="12"></line>
-                        </svg>
-                        <p className="no-data-title">Нет данных</p>
-                        <p className="no-data-message">
-                            Для выбранного заболевания и количества пациентов не найдено данных о лекарственных средствах
-                        </p>
-                    </div>
-                )
+                return <EmptyState type="no-data"/>
             }
         }
 
         return (
             <div className="table-responsive">
+                <MobileSortControls
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    onSortFieldChange={handleMobileSortChange}
+                    onSortDirectionToggle={toggleMobileSortDirection}
+                    options={sortOptions}
+                />
+
                 <div className="table-container">
                     <table className="supply-table">
                         <thead>
                         <tr>
                             <th className="column-number">№</th>
-                            <th className="sortable-header" onClick={() => requestSort('name')}>
+                            <th className="sortable-header" onClick={() => handleSort("name")}>
                                 <div className="header-content">
                                     Лекарственное средство
-                                    {renderSortIcon('name')}
+                                    {getSortIcon("name")}
                                 </div>
                             </th>
-                            <th className="sortable-header" onClick={() => requestSort('dosage')}>
+                            <th className="sortable-header" onClick={() => handleSort("dosage")}>
                                 <div className="header-content">
                                     Дозировка
-                                    {renderSortIcon('dosage')}
+                                    {getSortIcon("dosage")}
                                 </div>
                             </th>
-                            <th className="sortable-header" onClick={() => requestSort('frequency')}>
+                            <th className="sortable-header" onClick={() => handleSort("frequency")}>
                                 <div className="header-content">
                                     Частота приема
-                                    {renderSortIcon('frequency')}
+                                    {getSortIcon("frequency")}
                                 </div>
                             </th>
-                            <th className="sortable-header" onClick={() => requestSort('duration')}>
+                            <th className="sortable-header" onClick={() => handleSort("duration")}>
                                 <div className="header-content">
                                     Длительность курса
-                                    {renderSortIcon('duration')}
+                                    {getSortIcon("duration")}
                                 </div>
                             </th>
-                            <th className="column-price sortable-header" onClick={() => requestSort('price')}>
+                            <th className="column-price sortable-header" onClick={() => handleSort("price")}>
                                 <div className="header-content">
                                     Цена
-                                    {renderSortIcon('price')}
+                                    {getSortIcon("price")}
                                 </div>
                             </th>
-                            <th className="column-doses sortable-header" onClick={() => requestSort('total_doses')}>
+                            <th className="column-doses sortable-header" onClick={() => handleSort("total_doses")}>
                                 <div className="header-content">
                                     Общее кол-во доз
-                                    {renderSortIcon('total_doses')}
+                                    {getSortIcon("total_doses")}
                                 </div>
                             </th>
-                            <th className="sortable-header" onClick={() => requestSort('status')}>
+                            <th className="sortable-header" onClick={() => handleSort("status")}>
                                 <div className="header-content">
                                     Статус
-                                    {renderSortIcon('status')}
+                                    {getSortIcon("status")}
                                 </div>
                             </th>
                         </tr>
                         </thead>
                         <tbody>
-                        {sortedItems().map((item, index) => (
+                        {(sortedItems.length > 0 ? sortedItems : items).map((item, index) => (
                             <tr key={index} className={item.status === "рекомендовано" ? "recommended-row" : ""}>
                                 <td className="column-number">{index + 1}</td>
                                 <td className="column-name">{item.name}</td>
@@ -220,27 +183,7 @@ export function SupplyPlanTable({ hasSubmitted }: SupplyPlanTableProps) {
                                 <td className="column-price">{formatCurrency(item.price)}</td>
                                 <td className="column-doses">{item.total_doses.toLocaleString()}</td>
                                 <td>
-                                    {item.status === "рекомендовано" ? (
-                                        <span className="status-recommended">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        >
-                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                          <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                        </svg>
-                        <span>Рекомендовано</span>
-                      </span>
-                                    ) : (
-                                        <span className="status-not-recommended">Не рекомендовано</span>
-                                    )}
+                                    <StatusBadge status={item.status}/>
                                 </td>
                             </tr>
                         ))}
@@ -248,32 +191,17 @@ export function SupplyPlanTable({ hasSubmitted }: SupplyPlanTableProps) {
                     </table>
                 </div>
 
-                {/* Мобильное представление данных - показываем только на мобильных устройствах */}
                 <div className="mobile-cards">
-                    {sortedItems().map((item, index) => (
-                        <div key={index} className={`mobile-card ${item.status === "рекомендовано" ? "recommended" : ""}`}>
+                    {(sortedItems.length > 0 ? sortedItems : items).map((item, index) => (
+                        <div key={index}
+                             className={`mobile-card ${item.status === "рекомендовано" ? "recommended" : ""}`}>
                             <div className="mobile-card-header">
                                 <span className="mobile-card-number">{index + 1}</span>
                                 <h4 className="mobile-card-name">{item.name}</h4>
-                                {item.status === "рекомендовано" ? (
+                                {item.status === "рекомендовано" && (
                                     <span className="mobile-status-recommended">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    >
-                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                      <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                    </svg>
+                    <CheckCircleIcon size={16}/>
                   </span>
-                                ) : (
-                                    <span className="mobile-status-not-recommended"></span>
                                 )}
                             </div>
                             <div className="mobile-card-content">
@@ -325,5 +253,3 @@ export function SupplyPlanTable({ hasSubmitted }: SupplyPlanTableProps) {
         </div>
     )
 }
-
-export default SupplyPlanTable

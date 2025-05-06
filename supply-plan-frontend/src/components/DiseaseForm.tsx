@@ -1,10 +1,8 @@
-"use client"
-
 import type React from "react"
-
-import { useState, useEffect } from "react"
-import { useDispatch } from "react-redux"
-import { fetchSupplyPlanStart, fetchSupplyPlanSuccess, fetchSupplyPlanFailure } from "../store/supplyPlanSlice.ts"
+import {useEffect, useState} from "react"
+import {useDispatch} from "react-redux"
+import {fetchSupplyPlanFailure, fetchSupplyPlanStart, fetchSupplyPlanSuccess} from "../store/supplyPlanSlice.ts"
+import {AlertCircleIcon, ChevronDownIcon, LoaderIcon, PlusIcon} from "./icons"
 import axios from "axios"
 import "./styles/disease-form.css"
 
@@ -12,7 +10,7 @@ interface DiseaseFormProps {
     onSubmit?: () => void
 }
 
-export function DiseaseForm({ onSubmit }: DiseaseFormProps) {
+export function DiseaseForm({onSubmit}: DiseaseFormProps) {
     const [diseaseId, setDiseaseId] = useState<string>("1")
     const [numPatients, setNumPatients] = useState<number>(1)
     const [diseases, setDiseases] = useState<{ id: number; name: string }[]>([])
@@ -29,7 +27,7 @@ export function DiseaseForm({ onSubmit }: DiseaseFormProps) {
             try {
                 const response = await axios.get("http://localhost:5433/diseases")
                 // Преобразуем массив массивов в массив объектов
-                const diseasesData = response.data.map(([id, name]: [number, string]) => ({ id, name }))
+                const diseasesData = response.data.map(([id, name]: [number, string]) => ({id, name}))
                 setDiseases(diseasesData)
             } catch (error) {
                 console.error("Ошибка при загрузке списка заболеваний:", error)
@@ -96,21 +94,7 @@ export function DiseaseForm({ onSubmit }: DiseaseFormProps) {
                 <div className="form-content">
                     {error && (
                         <div className="error-message">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            >
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="12" y1="8" x2="12" y2="12"></line>
-                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                            </svg>
+                            <AlertCircleIcon size={16}/>
                             <span>{error}</span>
                         </div>
                     )}
@@ -130,22 +114,10 @@ export function DiseaseForm({ onSubmit }: DiseaseFormProps) {
                                     </option>
                                 ))}
                             </select>
-                            <svg
-                                className="select-arrow"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            >
-                                <path d="m6 9 6 6 6-6" />
-                            </svg>
+                            <ChevronDownIcon className="select-arrow" size={16}/>
                         </div>
-                        {diseases.length === 0 && !isLoading && !error && <p className="empty-message">Список заболеваний пуст</p>}
+                        {diseases.length === 0 && !isLoading && !error &&
+                            <p className="empty-message">Список заболеваний пуст</p>}
                     </div>
 
                     <div className="form-group">
@@ -187,38 +159,12 @@ export function DiseaseForm({ onSubmit }: DiseaseFormProps) {
                     >
                         {isLoading ? (
                             <>
-                                <svg
-                                    className="spinner"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="20"
-                                    height="20"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                >
-                                    <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
-                                </svg>
+                                <LoaderIcon className="spinner" size={20}/>
                                 <span>Формирование плана...</span>
                             </>
                         ) : (
                             <>
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="20"
-                                    height="20"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                >
-                                    <path d="M5 12h14"></path>
-                                    <path d="M12 5v14"></path>
-                                </svg>
+                                <PlusIcon size={20}/>
                                 <span>Сформировать план снабжения</span>
                             </>
                         )}

@@ -45,7 +45,7 @@
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    perspective: 1000px; /* Добавляем перспективу для 3D-эффекта */
+    perspective: 1000px;
 }
 
 .avatar-wrapper {
@@ -55,7 +55,7 @@
     overflow: hidden;
     box-shadow: var(--shadow-md);
     cursor: pointer;
-    transform-style: preserve-3d; /* Сохраняем 3D для дочерних элементов */
+    transform-style: preserve-3d;
 }
 
 /* Анимация вращения на один оборот */

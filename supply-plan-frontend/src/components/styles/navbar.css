@@ -135,6 +135,8 @@
         transition: all 0.3s ease;
         z-index: 9;
         gap: 15px;
+        max-height: calc(100vh - var(--header-height));
+        overflow-y: auto;
     }
 
     .main-nav.open {

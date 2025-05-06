@@ -98,7 +98,7 @@
     transition: all var(--transition);
     appearance: none;
     cursor: pointer;
-    padding-right: 30px; /* Добавляем отступ справа для стрелки */
+    padding-right: 30px;
 }
 
 .select-arrow {

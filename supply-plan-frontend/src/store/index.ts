@@ -1,4 +1,4 @@
-import { configureStore } from '@reduxjs/toolkit'
+import {configureStore} from '@reduxjs/toolkit'
 import supplyPlanReducer from './supplyPlanSlice.ts'
 
 export const store = configureStore({

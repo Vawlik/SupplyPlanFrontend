@@ -1,8 +1,5 @@
-"use client"
-
 import type React from "react"
-
-import { createContext, useContext, useEffect, useState } from "react"
+import {createContext, useContext, useEffect, useState} from "react"
 
 type Theme = "dark" | "light" | "system"
 
@@ -49,7 +46,7 @@ export function ThemeProvider({
 
     const value = {
         theme,
-        setTheme: (theme: Theme) => {
+        "setTheme": (theme: Theme) => {
             localStorage.setItem(storageKey, theme)
             setTheme(theme)
         },
@@ -69,4 +66,3 @@ export const useTheme = () => {
 
     return context
 }
-

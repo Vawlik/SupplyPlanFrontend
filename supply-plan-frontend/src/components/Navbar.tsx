@@ -1,15 +1,13 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import { Link, useLocation } from "react-router-dom"
-import { ThemeToggle } from "./ThemeToggle"
+import {useEffect, useState} from "react"
+import {Link, useLocation} from "react-router-dom"
+import {ThemeToggle} from "./ThemeToggle"
+import {ArrowIcon} from "./icons"
 import "./styles/navbar.css"
 
 export function Navbar() {
     const location = useLocation()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-    // Закрываем меню при изменении маршрута
     useEffect(() => {
         setIsMenuOpen(false)
     }, [location])
@@ -18,19 +16,7 @@ export function Navbar() {
         <header className="app-header">
             <div className="header-content">
                 <Link to="/" className="logo">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    >
-                        <path d="m12 6 4 6-8 6 4-12"></path>
-                    </svg>
+                    <ArrowIcon size={24}/>
                     <h1>Медицинский планировщик</h1>
                 </Link>
 
@@ -48,7 +34,7 @@ export function Navbar() {
                     </nav>
 
                     <div className="nav-controls">
-                        <ThemeToggle />
+                        <ThemeToggle/>
                         <button className="mobile-menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
                             <span className="sr-only">Меню</span>
                             <div className={`hamburger ${isMenuOpen ? "open" : ""}`}>
